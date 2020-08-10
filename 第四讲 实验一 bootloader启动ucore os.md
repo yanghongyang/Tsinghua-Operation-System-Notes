@@ -3,7 +3,7 @@
  * @Author: Hongyang_Yang
  * @Date: 2020-08-08 21:10:29
  * @LastEditors: Hongyang_Yang
- * @LastEditTime: 2020-08-10 00:02:54
+ * @LastEditTime: 2020-08-10 20:11:31
 -->
 
 # 启动顺序
@@ -136,4 +136,37 @@ asm(assembler template
    7. `0=sam as the first`
 
 INT 80 : 软中断
+
+# x86中的中断处理
+## x86中的中断处理 - 中断源
+- 中断 Interrupts
+  - 外部中断 External(hardware generated) interrupts 串口、硬盘、网卡、时钟
+  - 软件产生的中断 Software generated interrupts
+  - The INT n 指令，通常用于系统调用
+
+- 异常 Exceptions
+  - 程序错误
+  - 软件产生的异常 Software generated exceptions
+    - INTO， INT 3 and BOUND
+  - 机器检出的异常S
+
+## x86中的中断处理 - 确定中断服务例程（ISR）
+- 每个中断或异常与一个中断服务例程（Interrupt Service Routine, ISR）关联，其关联关系存储在中断描述符表（Interrupt Description Table，简称IDT）
+- IDT的起始地址和大小保存在中断描述符表寄存器IDTR中
+- 不同特权级的终端切换对堆栈的影响
+  - 在内核态产生的中断仍然在内核态
+    - 栈依然是同一个栈。
+    - 首先是`Error code`，接着压入`EIP`和`CS`，最后压入`EFLAGS`。
+  - 发生中断的时候处于不同的特权级
+    - 从用户态到内核态，使用的是不同的栈
+    - 因此除了压入`Error code`、`EIP`、`CS`、`EFLAGS`外，还需要压入`ESP`和`SS`来记录产生中断时，用户栈中的地址。
+
+- iret vs. ret vs. retf : iret弹出EFLAGS和SS/ESP（根据是否改变特权级），但ret弹出EIP，retf弹出CS和EIP
+
+## x86中的中断处理 - 系统调用（也可以被称为trap 陷入 软中断）
+- 用户程序通过系统调用访问OS内核服务
+- 如何实现
+  - 需要指定中断号
+  - 使用Trap，也称Software generated interrupt
+  - 或使用特殊指令（SYSENTER/SYSEXIT）
 
