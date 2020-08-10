@@ -3,7 +3,7 @@
  * @Author: Hongyang_Yang
  * @Date: 2020-08-08 21:10:29
  * @LastEditors: Hongyang_Yang
- * @LastEditTime: 2020-08-09 23:42:36
+ * @LastEditTime: 2020-08-10 00:02:54
 -->
 
 # 启动顺序
@@ -83,4 +83,57 @@ elf有elf头（ELFheader）`elfhdr`，指明了`Program Header`（程序段的�
 **读的是什么呢？**
 
 读的是磁盘扇区。
+
+# C函数调用的实现
+（这是在机器码的层面分析的）
+基本上就是压栈、调用函数返回地址的压栈、对EBP和ESP的处理。
+
+- 其他注意实现
+  - 参数（parameters）和函数返回值（return values）可以通过寄存器或位于内存中的栈来传递
+  - 不需要保存/恢复（save/restore）所有寄存器
+
+# GCC内联汇编 INLINE ASSEMBLY 
+- 什么是内联汇编？
+  - GCC对C语言的扩张
+  - 可直接在C语句中插入汇编指令
+
+- 有何用处？
+  - 调用C语言不支持的指令
+  - **用汇编在C语言中手动优化**
+
+- 如何工作？
+  - 用给定的模板和约束来生成汇编指令
+  - 在C函数内形成汇编源码
+
+## GCC内联汇编 - Syntax
+```
+asm(assembler template
+: output operands(optional)
+: input operands(optional)
+: clobbers(optional)
+);
+```
+一些关键字
+1. volatile
+   1. 不需要做进一步的优化；不需要调整顺序
+   2. No reordering; No elimination
+
+2. %0
+   1. 第一个用到的寄存器
+   2. The first constraint following
+
+3. r
+   1. 任意寄存器
+   2. A constraint; GCC is free to use any register
+
+4. 其他
+   1. `a=%eax`
+   2. `b=%ebx`
+   3. `c=%ecx`
+   4. `d=%edx`
+   5. `S=%esi`
+   6. `D=%edi`
+   7. `0=sam as the first`
+
+INT 80 : 软中断
 
